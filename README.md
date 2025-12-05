@@ -15,18 +15,15 @@ npm install babysql
 ## 基本 SELECT 查询
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-const q = BabySQL
-  .select('users')
-  .columns(['id', 'name'])
-  .where('status', '=', 'active')
-  .orderBy('id', 'DESC')
-  .limit(20)
-  .build();
-
-console.log(q.sql);
-console.log(q.params);
+const q = BabySQL.select('users')
+    .columns(['id', 'name'])
+    .where('status', '=', 'active')
+    .orderBy('id', 'DESC')
+    .limit(20)
+    .debug()
+    .build();
 ```
 
 ---
@@ -34,12 +31,21 @@ console.log(q.params);
 ## 模糊查询（LIKE）
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .select('users')
-  .whereLike('name', 'alice')   // name LIKE '%alice%'
-  .build();
+const q = BabySQL.select('users')
+    .whereLike('name', 'alice')   // name LIKE '%alice%'
+    .build();
+```
+
+## COUNT 查询
+
+```js
+const { BabySQL } = require("babysql");
+
+const q = BabySQL.count('users')
+    .countColumn('id', 'userCount')
+    .build();
 ```
 
 ---
@@ -47,12 +53,11 @@ BabySQL
 ## 分页查询
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .select('posts')
-  .paginate(3, 10)   // 第3页，每页10条
-  .build();
+const q = BabySQL.select('posts')
+    .paginate(3, 10)   // 第3页，每页10条
+    .build();
 ```
 
 ---
@@ -60,12 +65,11 @@ BabySQL
 ## INSERT
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .insert('users')
-  .data({ name: 'bob', age: 20 })
-  .build();
+const q = BabySQL.insert('users')
+    .data({ name: 'Alice', age: 25, created_at: new Date() })
+    .build();
 ```
 
 ---
@@ -73,13 +77,19 @@ BabySQL
 ## UPDATE
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .update('users')
-  .data({ name: 'newname' })
-  .where('id', '=', 1)
-  .build();
+// 安全更新（必须带 WHERE）
+const q = BabySQL.update('users')
+    .data({ age: 26 })
+    .where('id', '=', 1)
+    .build();
+
+// 全表更新（危险操作，需显式允许）
+const q = BabySQL.update('users')
+    .data({ status: 'inactive' })
+    .allowUnsafe()
+    .build();
 ```
 
 ---
@@ -87,25 +97,30 @@ BabySQL
 ## DELETE
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .delete('users')
-  .where('id', '=', 5)
-  .build();
+// 安全删除
+const q = BabySQL.delete('users')
+    .where('id', '=', 1)
+    .build();
+
+// 全表删除（危险操作）
+const q = BabySQL.delete('users')
+    .allowUnsafe()
+    .build();
 ```
 
 ---
 
-## whereIn
+## 模糊查询 & IN 条件
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .select('products')
-  .whereIn('id', [1, 2, 3])
-  .build();
+const q = BabySQL.select('products')
+    .whereLike('name', 'book')        // 模糊查询 %book%
+    .whereIn('category_id', [1, 2, 3])
+    .build();
 ```
 
 ---
@@ -113,10 +128,9 @@ BabySQL
 ## whereRaw
 
 ```js
-const BabySQL = require('babysql');
+const { BabySQL } = require("babysql");
 
-BabySQL
-  .select('logs')
+const q = BabySQL.select('logs')
   .whereRaw('created_at > ?', ['2024-01-01'])
   .build();
 ```

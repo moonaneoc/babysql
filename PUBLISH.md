@@ -5,7 +5,7 @@
 1. **安装依赖**
 
 ```bash
-npm install typescript tsup --save-dev
+npm install
 ```
 
 2. **构建**
@@ -22,6 +22,6 @@ npm run build
 
 ```bash
 npm login
-npm version patch
-npm publish --access public
+npm version patch / npm version minor / npm version major
+npm publish
 ```
