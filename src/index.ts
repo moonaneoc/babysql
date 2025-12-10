@@ -46,7 +46,15 @@ class BabySQLBuilder {
 
     /** 用于 insert/update 的数据 */
     data(obj: Record<string, Primitive>): this {
-        this._data = { ...obj };
+        const cleaned: Record<string, Primitive> = {};
+
+        for (const [key, value] of Object.entries(obj)) {
+            if (value !== undefined) {
+                cleaned[key] = value;
+            }
+        }
+
+        this._data = cleaned;
         return this;
     }
 
@@ -160,7 +168,10 @@ class BabySQLBuilder {
         // ---------------- INSERT ----------------
         else if (this.type === 'insert') {
             if (!this._data) throw new Error('insert() 需要先调用 data()');
+
             const keys = Object.keys(this._data);
+            if (!keys.length) throw new Error('insert() data 为空');
+
             const placeholders = keys.map(() => '?').join(', ');
             sql = `INSERT INTO ${this.table} (${keys.join(', ')}) VALUES (${placeholders})`;
             params.push(...keys.map(k => this._data![k]));
@@ -176,6 +187,8 @@ class BabySQLBuilder {
             }
 
             const keys = Object.keys(this._data);
+            if (!keys.length) throw new Error('update() data 为空');
+
             const sets = keys.map(k => `${k} = ?`).join(', ');
             sql = `UPDATE ${this.table} SET ${sets}`;
             params.push(...keys.map(k => this._data![k]));
